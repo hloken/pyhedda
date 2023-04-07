@@ -5,9 +5,20 @@ import matplotlib.animation as animation
 from matplotlib.animation import PillowWriter
 from tqdm import trange
 import sys
-
 sys.stdout = open('output.txt','wt')
-print("Hello 1")
+
+print("Starting simulation")
+
+# konstanter
+b = 0.001                       # Bakterie reproduksjonsfaktor
+max_alder = 10                  # Hvor lenge bakterier lever
+mutasjons_sannsynlighet = 1e-2  # sannsynlighet for a reproduksjon muterer gener
+simulerings_lengde = 10         # antall bakterieår simuleringen skal kjøre
+
+# miljø for bakterier
+x_celler = 100
+y_celler = 100
+bakterier = []
 
 
 # flytting av bakterien
@@ -29,10 +40,6 @@ def flytte_funksjon(x_celler, y_celler):
     return flytt
 
 
-
-# Lag en bakterie med akkurat samme resistans som "forelder"-bakterien.
-
-
 # Reproduksjon av bakterier
 def sannsynlighetsfunksjon(b):
     def p(n):
@@ -42,13 +49,11 @@ def sannsynlighetsfunksjon(b):
     return p
 
 
-p = sannsynlighetsfunksjon(0.001)
-
-
 def reproduksjon(mammabakterie):
 
     antallbakterier = len(bakterier)
 
+    p = sannsynlighetsfunksjon(b)
     sannsynlighet = p(antallbakterier)
     r = np.random.uniform(low=0, high=1)
     if r < sannsynlighet:
@@ -57,15 +62,6 @@ def reproduksjon(mammabakterie):
         return False
 
 
-
-# milø for bakterier
-x_celler = 100
-y_celler = 100
-bakterier = []
-max_alder = 10
-
-#lage muterte gener sannsynlighet
-mutasjons_sannsynlighet = 1e-2
 def skal_mutere():
     r = np.random.uniform(low=0, high=1)
     if mutasjons_sannsynlighet > r:
@@ -86,15 +82,6 @@ def nybakterie(ny_x, ny_y):
     bakterie.alder = 0
 
     return bakterie
-
-# lag 5 bakterier
-bakterier.append(nybakterie(1, 1))
-bakterier.append(nybakterie(1, int(0.25 * y_celler)))
-bakterier.append(nybakterie(1, int(0.5 * y_celler)))
-bakterier.append(nybakterie(1, int(0.75 * y_celler)))
-bakterier.append(nybakterie(1, y_celler - 1))
-
-flytt = flytte_funksjon(x_celler, y_celler)
 
 
 def antibiotika_konsentrasjon(x):
@@ -120,46 +107,45 @@ def leve_antibiotika(bakterie):
         return False
 
 
+flytt = flytte_funksjon(x_celler, y_celler)
 
-def skal_dø(bakterie):
-    return False
+# lag 5 bakterier
+bakterier.append(nybakterie(1, 1))
+bakterier.append(nybakterie(1, int(0.25 * y_celler)))
+bakterier.append(nybakterie(1, int(0.5 * y_celler)))
+bakterier.append(nybakterie(1, int(0.75 * y_celler)))
+bakterier.append(nybakterie(1, y_celler - 1))
 
-
-
+# sett opp tegning
 fig, ax = plt.subplots()
-
-
+imgs = []
 
 # simulering og visualisering
-imgs = []
-for n in trange(400):
+for n in trange(simulerings_lengde):
     img = np.zeros(shape=(x_celler, y_celler))
 
     nyfodtebakterier = []
     for bakterie in bakterier:
 
         # simulering
-        if skal_dø(bakterie):
-            bakterier.remove(bakterie)
-        else:
-            if reproduksjon(bakterie):
-                nyfodtbakterie = nybakterie(bakterie.x, bakterie.y)
+        if reproduksjon(bakterie):
+            nyfodtbakterie = nybakterie(bakterie.x, bakterie.y)
 
-                if skal_mutere():
-                    if bakterie.resistans < 1.0:
-                        nyfodtbakterie.resistans = bakterie.resistans + 0.1
-                    else:
-                        nyfodtbakterie.resistans = bakterie.resistans
-
-                    print(str(n) + ":ny bakterie med mutasjon er født, x:" + str(nyfodtbakterie.x) + " y:" + str(nyfodtbakterie.y) + " resistans: " + str(nyfodtbakterie.resistans))
+            if skal_mutere():
+                if bakterie.resistans < 1.0:
+                    nyfodtbakterie.resistans = bakterie.resistans + 0.1
                 else:
                     nyfodtbakterie.resistans = bakterie.resistans
-                    print(str(n) + ":ny bakterie er født, x:" + str(nyfodtbakterie.x) + " y:" + str(nyfodtbakterie.y) + " resistans: " + str(nyfodtbakterie.resistans))
 
-                nyfodtebakterier.append(nyfodtbakterie)
+                print(str(n) + ":ny bakterie med mutasjon er født, x:" + str(nyfodtbakterie.x) + " y:" + str(nyfodtbakterie.y) + " resistans: " + str(nyfodtbakterie.resistans))
+            else:
+                nyfodtbakterie.resistans = bakterie.resistans
+                print(str(n) + ":ny bakterie er født, x:" + str(nyfodtbakterie.x) + " y:" + str(nyfodtbakterie.y) + " resistans: " + str(nyfodtbakterie.resistans))
 
-            flytt(bakterie)
-            bakterie.alder += 1
+            nyfodtebakterier.append(nyfodtbakterie)
+
+        flytt(bakterie)
+        bakterie.alder += 1
 
     bakterier.extend(nyfodtebakterier)
 
