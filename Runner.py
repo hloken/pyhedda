@@ -117,11 +117,19 @@ bakterier.append(nybakterie(1, y_celler - 1))
 
 # sett opp tegning
 fig, ax = plt.subplots()
-imgs = []
+#ax = plt.axes(xlim=(0, x_celler), ylim=(0, y_celler))
+#ax.text(0.05, 0.95, '', horizontalalignment='left', verticalalignment='top', transform=ax.transAxes)
+
 
 # simulering og visualisering
-for n in trange(simulerings_lengde):
-    img = np.zeros(shape=(x_celler, y_celler))
+#def init():
+#    for line, pt in zip(pts):
+#        pt.set_data([], [])
+#        time_text.set_text('hello')
+#    return pts + [time_text,]
+
+def animate(n):
+    ax.cla()  # clear the previous image
 
     nyfodtebakterier = []
     for bakterie in bakterier:
@@ -150,21 +158,29 @@ for n in trange(simulerings_lengde):
 
     for bakterie in bakterier:
         if bakterie.alder >= max_alder:
-            print("Bakterie dør av alderdom og alder:" + str(bakterie.alder) + " x:" + str(bakterie.x) + " y:" + str(bakterie.y))
+            print("Bakterie dør av alderdom og alder:" + str(bakterie.alder) + " x:" + str(bakterie.x) + " y:"
+                  + str(bakterie.y))
             bakterier.remove(bakterie)
         elif leve_antibiotika(bakterie) is False:
-            print("Bakterie dør av antibiotika, resistans:" + str(bakterie.resistans) + " x:" + str(bakterie.x) + " y:" + str(
-                bakterie.y))
+            print("Bakterie dør av antibiotika, resistans:" + str(bakterie.resistans) + " x:" + str(bakterie.x) + " y:"
+                  + str(bakterie.y))
             bakterier.remove(bakterie)
 
     # visualisering
+    x = []  # x-koordinater
+    y = []  # y-koordinater
     for bakterie in bakterier:
-        img[bakterie.x, bakterie.y] = 1
+        x.append(bakterie.x)
+        y.append(bakterie.y)
 
-    imgs.append([ax.imshow(img.T, animated=True)])
+    ax.text(0.05, 0.95, 'time = %.1d' % n, horizontalalignment='left', verticalalignment='top', transform=ax.transAxes)
+    ax.scatter(x, y, 2)  # tegning av bakterie posisjoner
+    ax.set_xlim([0, x_celler])
+    ax.set_ylim([0, y_celler])
 
-ani = animation.ArtistAnimation(fig, imgs, interval=1000, blit=True)
 
-print("Skriver banana.gif")
+ani = animation.FuncAnimation(fig, func=animate, interval=1, frames=trange(simulerings_lengde + 1), blit=False)
+
+print("Skriver simulation.mp4")
 ani.save("simulation.mp4", fps=1, writer="ffmpeg")
 plt.close()
