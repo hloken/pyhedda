@@ -9,10 +9,10 @@ sys.stdout = open('output.txt','wt')
 print("Starting simulation")
 
 # konstanter
-b = 0.001                       # Bakterie reproduksjonsfaktor
+b = 1e-3                        # Bakterie reproduksjonsfaktor
 max_alder = 10                  # Hvor lenge bakterier lever
 mutasjons_sannsynlighet = 1e-2  # sannsynlighet for a reproduksjon muterer gener
-simulerings_lengde = 10         # antall bakterieår simuleringen skal kjøre
+simulerings_lengde = 10000      # antall bakterieår simuleringen skal kjøre
 
 # miljø for bakterier
 x_celler = 100
@@ -173,7 +173,7 @@ def animate(n):
         x.append(bakterie.x)
         y.append(bakterie.y)
 
-    ax.text(0.05, 0.95, 'time = %.1d' % n, horizontalalignment='left', verticalalignment='top', transform=ax.transAxes)
+    ax.text(0.05, 0.95, 'tid = %.1d, b = %g, m = %g' % (n, b, mutasjons_sannsynlighet), horizontalalignment='left', verticalalignment='top', transform=ax.transAxes)
     ax.scatter(x, y, 2)  # tegning av bakterie posisjoner
     ax.set_xlim([0, x_celler])
     ax.set_ylim([0, y_celler])
