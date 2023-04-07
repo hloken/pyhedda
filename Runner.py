@@ -2,7 +2,6 @@ from bakterie import Bakterie
 import numpy as np  # Nødvendig pakke
 import matplotlib.pyplot as plt  # Nødvendig pakkee
 import matplotlib.animation as animation
-from matplotlib.animation import PillowWriter
 from tqdm import trange
 import sys
 sys.stdout = open('output.txt','wt')
@@ -166,7 +165,6 @@ for n in trange(simulerings_lengde):
 
 ani = animation.ArtistAnimation(fig, imgs, interval=1000, blit=True)
 
-writer = PillowWriter(fps=2)
 print("Skriver banana.gif")
-ani.save("banana.gif", writer=writer)
+ani.save("simulation.mp4", fps=1, writer="ffmpeg")
 plt.close()
